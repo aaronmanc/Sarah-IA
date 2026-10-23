@@ -3,6 +3,8 @@ from sqlalchemy import select
 from database.connection import SessionLocal
 from models.professional import Professional
 from models.health_center import HealthCenter
+from models.patient import Patient
+from models.professional_patient import ProfessionalPatient
 
 
 def get_professional(
@@ -27,6 +29,19 @@ def list_professionals():
         return db.execute(statement).scalars().all()
     finally:
         db.close()
+
+def list_patients_by_professional(professional_id: str):
+    db = SessionLocal()
+    try:
+        statement = (
+            select(Patient)
+            .join(ProfessionalPatient, Patient.id == ProfessionalPatient.patient_id)
+            .where(ProfessionalPatient.professional_id == professional_id)
+        )
+        patients = db.execute(statement).scalars().all()
+        return patients
+    finally:
+        db.close()  
 
 
 def create_professional(
@@ -67,23 +82,24 @@ def create_professional(
         db.close()
 
 
-def update_professional(
-    professional_id: str,
-    **fields,
-):
+def update_professional(professional_id: str, **fields):
     db = SessionLocal()
     try:
         statement = select(Professional).where(
             Professional.id == professional_id
         )
-
-        professional = db.execute(
-            statement
-        ).scalar_one_or_none()
+        professional = db.execute(statement).scalar_one_or_none()
 
         if professional is None:
             return None
+
+        cleaned_fields = {}
+        for key, value in fields.items():
+            if value is not None:
+                cleaned_fields[key] = value
         
+        fields = cleaned_fields
+
         if "health_center_id" in fields:
             health_center = db.execute(
                 select(HealthCenter).where(
@@ -92,15 +108,12 @@ def update_professional(
             ).scalar_one_or_none()
 
             if health_center is None:
-                return None
+                return None 
+
 
         for field, value in fields.items():
             if hasattr(professional, field):
-                setattr(
-                    professional,
-                    field,
-                    value,
-                )
+                setattr(professional, field, value)
 
         db.commit()
         db.refresh(professional)
@@ -108,6 +121,7 @@ def update_professional(
 
     finally:
         db.close()
+
 
 
 def delete_professional(

@@ -1,8 +1,10 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Query
+from typing import List, Optional
 from sqlalchemy.exc import IntegrityError
 from schemas.food_record import FoodRecord, CreateFoodRecord, UpdateFoodRecord
 from repositories.food_records import (
     get_food_record,
+    list_food_records,
     create_food_record,
     update_food_record,
     delete_food_record,
@@ -21,6 +23,10 @@ def get_food_record_endpoint(record_id: str):
         )
     return record
 
+@router.get("/food", response_model=list[FoodRecord])
+def list_food_records_endpoint(patient_id: str | None = None):
+    records = list_food_records(patient_id=patient_id)
+    return records
 
 @router.post("", response_model=FoodRecord, status_code=status.HTTP_201_CREATED)
 def create_food_record_endpoint(record: CreateFoodRecord):

@@ -7,6 +7,7 @@ from schemas.weight_record import (
 )
 from repositories.weight_records import (
     get_weight_record,
+    list_weight_records,
     create_weight_record,
     update_weight_record,
     delete_weight_record,
@@ -24,6 +25,11 @@ def get_weight_record_endpoint(record_id: str):
             detail="Weight record not found",
         )
     return record
+
+@router.get("/weight", response_model=list[WeightRecord])
+def list_weight_records_endpoint(patient_id: str | None = None):
+    records = list_weight_records(patient_id=patient_id)
+    return records
 
 
 @router.post("", response_model=WeightRecord, status_code=status.HTTP_201_CREATED)

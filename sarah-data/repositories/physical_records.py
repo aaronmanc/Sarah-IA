@@ -12,6 +12,16 @@ def get_physical_activity_record(record_id: str):
     finally:
         db.close()
 
+def list_physical_activity_records(patient_id: str = None):
+    db = SessionLocal()
+    try:
+        statement = select(PhysicalActivityRecord)
+        if patient_id:
+            statement = statement.where(PhysicalActivityRecord.patient_id == patient_id)
+        return db.execute(statement).scalars().all()
+    finally:
+        db.close()
+
 
 def create_physical_activity_record(
     activity_type: str,
@@ -44,8 +54,13 @@ def update_physical_activity_record(record_id: str, **fields):
 
         if record is None:
             return None
+            
+        cleaned_fields = {}
+        for key, value in fields.items():
+            if value is not None:
+                cleaned_fields[key] = value
 
-        for field, value in fields.items():
+        for field, value in cleaned_fields.items():
             if hasattr(record, field):
                 setattr(record, field, value)
 

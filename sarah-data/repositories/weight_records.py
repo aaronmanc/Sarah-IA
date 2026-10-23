@@ -13,6 +13,16 @@ def get_weight_record(record_id: str):
     finally:
         db.close()
 
+def list_weight_records(patient_id: str = None):
+    db = SessionLocal()
+    try:
+        statement = select(WeightRecord)
+        if patient_id:
+            statement = statement.where(WeightRecord.patient_id == patient_id)
+        return db.execute(statement).scalars().all()
+    finally:
+        db.close()
+
 
 def create_weight_record(
     weight: float,
@@ -44,7 +54,12 @@ def update_weight_record(record_id: str, **fields):
         if record is None:
             return None
 
-        for field, value in fields.items():
+        cleaned_fields = {}
+        for key, value in fields.items():
+            if value is not None:
+                cleaned_fields[key] = value
+
+        for field, value in cleaned_fields.items():
             if hasattr(record, field):
                 setattr(record, field, value)
 
@@ -53,7 +68,6 @@ def update_weight_record(record_id: str, **fields):
         return record
     finally:
         db.close()
-
 
 def delete_weight_record(record_id: str):
     db = SessionLocal()

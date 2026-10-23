@@ -7,6 +7,7 @@ from schemas.emotional_record import (
 )
 from repositories.emotional_records import (
     get_emotional_record,
+    list_emotional_records,
     create_emotional_record,
     update_emotional_record,
     delete_emotional_record,
@@ -24,6 +25,11 @@ def get_emotional_record_endpoint(record_id: str):
             detail="Emotional record not found",
         )
     return record
+
+@router.get("/emotional", response_model=list[EmotionalRecord])
+def list_emotional_records_endpoint(patient_id: str | None = None):
+    records = list_emotional_records(patient_id=patient_id)
+    return records
 
 
 @router.post("", response_model=EmotionalRecord, status_code=status.HTTP_201_CREATED)

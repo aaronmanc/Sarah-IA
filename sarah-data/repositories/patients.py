@@ -76,25 +76,21 @@ def create_patient(
 def update_patient(patient_id: str, **fields):
     db = SessionLocal()
     try:
-
         statement = select(Patient).where(
-            Patient.id == patient_id
-        )
-
-        patient = db.execute(
-            statement
-        ).scalar_one_or_none()
+            Patient.id == patient_id)
+        patient = db.execute(statement).scalar_one_or_none()
 
         if patient is None:
             return None
 
-        for field, value in fields.items():
+        cleaned_fields = {}
+        for key, value in fields.items():
+            if value is not None:
+                cleaned_fields[key] = value
+
+        for field, value in cleaned_fields.items():
             if hasattr(patient, field):
-                setattr(
-                    patient,
-                    field,
-                    value,
-                )
+                setattr(patient, field, value)
 
         db.commit()
         db.refresh(patient)

@@ -13,6 +13,16 @@ def get_emotional_record(record_id: str):
     finally:
         db.close()
 
+def list_emotional_records(patient_id: str = None):
+    db = SessionLocal()
+    try:
+        statement = select(EmotionalRecord)
+        if patient_id:
+            statement = statement.where(EmotionalRecord.patient_id == patient_id)
+        return db.execute(statement).scalars().all()
+    finally:
+        db.close()
+
 
 def create_emotional_record(
     emotional_state: str,
@@ -44,7 +54,12 @@ def update_emotional_record(record_id: str, **fields):
         if record is None:
             return None
 
-        for field, value in fields.items():
+        cleaned_fields = {}
+        for key, value in fields.items():
+            if value is not None:
+                cleaned_fields[key] = value
+
+        for field, value in cleaned_fields.items():
             if hasattr(record, field):
                 setattr(record, field, value)
 

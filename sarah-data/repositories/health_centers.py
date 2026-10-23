@@ -47,24 +47,21 @@ def create_health_center(name: str, city: str):
 def update_health_center(health_center_id: str, **fields):
     db = SessionLocal()
     try:
-        statement = select(HealthCenter).where(
-            HealthCenter.id == health_center_id
-        )
+        statement = select(HealthCenter).where(HealthCenter.id == health_center_id)
 
-        health_center = db.execute(
-            statement
-        ).scalar_one_or_none()
+        health_center = db.execute(statement).scalar_one_or_none()
 
         if health_center is None:
             return None
 
-        for field, value in fields.items():
+        cleaned_fields = {}
+        for key, value in fields.items():
+            if value is not None:
+                cleaned_fields[key] = value
+
+        for field, value in cleaned_fields.items():
             if hasattr(health_center, field):
-                setattr(
-                    health_center,
-                    field,
-                    value,
-                )
+                setattr(health_center, field, value)
 
         db.commit()
         db.refresh(health_center)

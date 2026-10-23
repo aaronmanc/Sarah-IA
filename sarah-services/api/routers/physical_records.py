@@ -7,6 +7,7 @@ from schemas.physical_record import (
 )
 from repositories.physical_records import (
     get_physical_activity_record,
+    list_physical_activity_records,
     create_physical_activity_record,
     update_physical_activity_record,
     delete_physical_activity_record,
@@ -23,6 +24,11 @@ def get_physical_record_endpoint(record_id: str):
             detail="Physical activity record not found",
         )
     return record
+
+@router.get("/physical", response_model=list[PhysicalActivityRecord])
+def list_physical_records_endpoint(patient_id: str | None = None):
+    records = list_physical_activity_records(patient_id=patient_id)
+    return records
 
 
 @router.post("", response_model=PhysicalActivityRecord, status_code=status.HTTP_201_CREATED)

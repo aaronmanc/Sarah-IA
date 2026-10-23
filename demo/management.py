@@ -2,13 +2,13 @@ from datetime import datetime, date
 from fastapi import HTTPException
 
 from api.routers.patients import (list_patients_endpoint, update_patient_endpoint)
-from api.routers.professionals import (list_professionals_endpoint, update_professional_endpoint)
+from api.routers.professionals import (list_professionals_endpoint, list_patients_by_professional_endpoint, update_professional_endpoint)
 from api.routers.professional_patients import (create_professional_patient_endpoint)
 
-from api.routers.weight_records import (create_weight_record_endpoint, update_weight_record_endpoint, delete_weight_record_endpoint)
-from api.routers.food_records import (create_food_record_endpoint, update_food_record_endpoint, delete_food_record_endpoint)
-from api.routers.emotional_records import (create_emotional_record_endpoint, update_emotional_record_endpoint, delete_emotional_record_endpoint)
-from api.routers.physical_records import (create_physical_record_endpoint, update_physical_record_endpoint, delete_physical_record_endpoint)
+from api.routers.weight_records import (create_weight_record_endpoint, list_weight_records_endpoint, update_weight_record_endpoint, delete_weight_record_endpoint)
+from api.routers.food_records import (create_food_record_endpoint, list_food_records_endpoint, update_food_record_endpoint, delete_food_record_endpoint)
+from api.routers.emotional_records import (create_emotional_record_endpoint, list_emotional_records_endpoint, update_emotional_record_endpoint, delete_emotional_record_endpoint) 
+from api.routers.physical_records import (create_physical_record_endpoint, list_physical_records_endpoint, update_physical_record_endpoint, delete_physical_record_endpoint)
 
 from .message import (send_message)
 
@@ -85,7 +85,7 @@ def manage_patients_flow():
         return
 
     while True:
-        print(f"\n--- GESTIONANDO PACIENTE: {selected_patient.first_name} {selected_patient.last_name} ---")
+        print(f"\n-- GESTIONANDO PACIENTE: {selected_patient.first_name} {selected_patient.last_name} --")
         print("1. Actualizar información del paciente")
         print("2. Gestionar registros médicos")
         print("3. Enviar Mensaje a Sarah IA")
@@ -105,31 +105,68 @@ def manage_patients_flow():
 
 
 def update_patient_info(patient_id: str):
-    print("\n--- Actualizar Paciente (Presione Enter para mantener valor actual o escriba '.' para cancelar) ---")
+    print("\n-- Actualizar Paciente (Presione Enter para mantener valor actual) --")
     try:
         first_name = input("Nuevo First Name: ").strip() or None
         last_name = input("Nuevo Last Name: ").strip() or None
+        rut = input("Nuevo RUT: ").strip() or None
+        
+        birth_date_str = input("Nueva Fecha de Nacimiento (YYYY-MM-DD): ").strip()
+        birth_date = datetime.strptime(birth_date_str, "%Y-%m-%d").date() if birth_date_str else None
+
+        sex = input("Nuevo Sexo: ").strip() or None
+        email = input("Nuevo Email: ").strip() or None
+        phone = input("Nuevo Teléfono: ").strip() or None
+
+        current_height_str = input("Nueva Altura (m): ").strip()
+        current_height = float(current_height_str) if current_height_str else None
+
         current_weight_str = input("Nuevo Peso (kg): ").strip()
         current_weight = float(current_weight_str) if current_weight_str else None
+
+        lives_alone_str = input("¿Vive solo? (s/n): ").strip().lower()
+        lives_alone = None
+        if lives_alone_str in ("s", "si", "y", "yes", "true", "1"):
+            lives_alone = True
+        elif lives_alone_str in ("n", "no", "false", "0"):
+            lives_alone = False
+
+        bmi_str = input("Nuevo BMI: ").strip()
+        bmi = float(bmi_str) if bmi_str else None
+
+        context = input("Nuevo Contexto: ").strip() or None
+        psychological_profile = input("Nuevo Perfil Psicológico: ").strip() or None
 
         payload = UpdatePatient(
             first_name=first_name,
             last_name=last_name,
-            current_weight=current_weight
+            rut=rut,
+            birth_date=birth_date,
+            sex=sex,
+            email=email,
+            phone=phone,
+            current_height=current_height,
+            current_weight=current_weight,
+            lives_alone=lives_alone,
+            bmi=bmi,
+            context=context,
+            psychological_profile=psychological_profile,
         )
+        
         updated = update_patient_endpoint(patient_id, payload)
         print(f"[SUCCESS] Paciente actualizado correctamente.")
+        
     except HTTPException as e:
         print(f"[ERROR] {e.detail}")
     except ValueError:
-        print("[ERROR] Formato numérico inválido.")
+        print("[ERROR] Formato de dato inválido (verifique números o el formato de fecha YYYY-MM-DD).")
     except KeyboardInterrupt:
         print("\n[INFO] Actualización cancelada.")
 
 
 def manage_records_flow(patient_id: str):
     while True:
-        print("\n--- GESTIÓN DE REGISTROS DEL PACIENTE ---")
+        print("\n-- GESTIÓN DE REGISTROS DEL PACIENTE --")
         print("1. Registro de Peso (Weight Record)")
         print("2. Registro de Comida (Food Record)")
         print("3. Registro Emocional (Emotional Record)")
@@ -153,10 +190,11 @@ def manage_records_flow(patient_id: str):
 
 def handle_record_crud(record_type: str, patient_id: str):
     while True:
-        print(f"\n--- CRUD {record_type.upper()} RECORDS ---")
+        print(f"\n-- CRUD {record_type.upper()} RECORDS --")
         print("1. Insertar")
         print("2. Actualizar")
         print("3. Eliminar")
+        print("4. Listar")
         print("0. Volver")
 
         action = input("\nSeleccione acción: ").strip()
@@ -218,6 +256,35 @@ def handle_record_crud(record_type: str, patient_id: str):
                 print(f"[ERROR] {e.detail}")
             except KeyboardInterrupt:
                 print("\n[INFO] Operación cancelada.")
+        elif action == "4":
+            try:
+                print(f"\n--- Listado de Registros ({record_type}) ---")
+                if record_type == "weight":
+                    records = list_weight_records_endpoint(patient_id=patient_id)
+                    for r in records:
+                        print(f"ID: {r.id} | Peso: {r.weight}kg")
+                elif record_type == "food":
+                    records = list_food_records_endpoint(patient_id=patient_id)
+                    for r in records:
+                        print(f"ID: {r.id} | Descripción: {r.description}")
+                elif record_type == "emotional":
+                    records = list_emotional_records_endpoint(patient_id=patient_id)
+                    for r in records:
+                        print(f"ID: {r.id} | Estado: {r.emotional_state}")
+                elif record_type == "physical":
+                    records = list_physical_records_endpoint(patient_id=patient_id)
+                    for r in records:
+                        print(f"ID: {r.id} | Actividad: {r.activity_type} | Duración: {r.duration}")
+                
+                if not records:
+                    print("[INFO] No se encontraron registros para este paciente.")
+            except HTTPException as e:
+                print(f"[ERROR] {e.detail}")
+            except KeyboardInterrupt:
+                print("\n[INFO] Operación cancelada.")
+        else:
+            print("[ERROR] Opción no válida.")
+
 
 
 
@@ -236,6 +303,7 @@ def manage_professionals_flow():
         print(f"\n--- GESTIONANDO PROFESIONAL: {selected_prof.first_name} {selected_prof.last_name} ---")
         print("1. Actualizar información del profesional")
         print("2. Asignar este profesional a un paciente")
+        print("3. Ver pacientes asignados")
         print("0. Volver")
 
         choice = input("\nSeleccione una opción: ").strip()
@@ -245,6 +313,8 @@ def manage_professionals_flow():
             update_professional_info(selected_prof.id)
         elif choice == "2":
             assign_prof_to_patient(selected_prof.id)
+        elif choice == "3":
+            show_assigned_patients(selected_prof.id, f"{selected_prof.first_name} {selected_prof.last_name}")   
         else:
             print("[ERROR] Opción no válida.")
 
@@ -255,11 +325,17 @@ def update_professional_info(professional_id: str):
         first_name = input("Nuevo First Name: ").strip() or None
         last_name = input("Nuevo Last Name: ").strip() or None
         specialty = input("Nueva Especialidad: ").strip() or None
+        email = input("Nuevo Email: ").strip() or None
+        phone = input("Nuevo Phone: ").strip() or None
+        health_center_id = input("Nuevo Health Center ID (UUID): ").strip() or None
 
         payload = UpdateProfessional(
             first_name=first_name,
             last_name=last_name,
-            specialty=specialty
+            specialty=specialty,
+            email=email,
+            phone=phone,
+            health_center_id=health_center_id
         )
         update_professional_endpoint(professional_id, payload)
         print(f"[SUCCESS] Profesional actualizado correctamente.")
@@ -271,9 +347,22 @@ def update_professional_info(professional_id: str):
 
 def assign_prof_to_patient(professional_id: str):
     print("\n--- Asignar Profesional a Paciente ---")
-    patients = list_patients_endpoint()
+    
+    all_patients = list_patients_endpoint()
+    assigned_patients = list_patients_by_professional_endpoint(professional_id)
+    assigned_patient_ids = {p.id for p in assigned_patients}
+    
+    available_patients = [
+        p for p in all_patients 
+        if p.id not in assigned_patient_ids
+    ]
+    
+    if not available_patients:
+        print("[INFO] Todos los pacientes ya están asignados a este profesional.")
+        return
+
     selected_patient = select_item_by_index(
-        patients, 
+        available_patients, 
         lambda p: f"{p.first_name} {p.last_name} (RUT: {p.rut})"
     )
     
@@ -289,3 +378,15 @@ def assign_prof_to_patient(professional_id: str):
         print(f"[SUCCESS] Profesional asignado exitosamente al paciente {selected_patient.first_name} {selected_patient.last_name}.")
     except HTTPException as e:
         print(f"[ERROR] {e.detail}")
+
+
+def show_assigned_patients(professional_id: str, prof_name: str):
+    print(f"\n-- Pacientes Asignados a {prof_name} --")
+    assigned_patients = list_patients_by_professional_endpoint(professional_id)
+    
+    if not assigned_patients:
+        print("[INFO] Este profesional no tiene pacientes asignados.")
+        return
+
+    for index, patient in enumerate(assigned_patients, 1):
+        print(f"{index}. {patient.first_name} {patient.last_name} | RUT: {patient.rut} | Email: {patient.email}")
