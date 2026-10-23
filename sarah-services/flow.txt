@@ -1,0 +1,7 @@
+1. Insertar
+
+->
+1. Insertar Paciente
+2. Insertar Profesional
+3. Asignar Paciente-Profesional
+4. Insertar Centro de salud

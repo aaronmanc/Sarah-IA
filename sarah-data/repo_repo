@@ -1,0 +1,896 @@
+
+def get_conversation(conversation_id: str):
+    db = SessionLocal()
+    try:
+        statement = select(Conversation).where(Conversation.id == conversation_id)
+        return db.execute(statement).scalar_one_or_none()
+    finally:
+        db.close()
+
+
+def create_conversation(patient_id: str):
+    db = SessionLocal()
+    try:
+        conversation = Conversation(
+            id=str(uuid.uuid4()),
+            patient_id=patient_id,
+        )
+        db.add(conversation)
+        db.commit()
+        db.refresh(conversation)
+        return conversation
+    finally:
+        db.close()
+
+
+def delete_conversation(conversation_id: str):
+    db = SessionLocal()
+    try:
+        statement = select(Conversation).where(Conversation.id == conversation_id)
+        conversation = db.execute(statement).scalar_one_or_none()
+
+        if conversation is None:
+            return None
+
+        db.delete(conversation)
+        db.commit()
+        return conversation
+    finally:
+        db.close()
+
+        
+def get_emotional_record(record_id: str):
+    db = SessionLocal()
+    try:
+        statement = select(EmotionalRecord).where(EmotionalRecord.id == record_id)
+        return db.execute(statement).scalar_one_or_none()
+    finally:
+        db.close()
+
+
+def create_emotional_record(
+    emotional_state: str,
+    patient_id: str,
+    recorded_at: datetime | None = None,
+):
+    db = SessionLocal()
+    try:
+        record = EmotionalRecord(
+            id=str(uuid.uuid4()),
+            emotional_state=emotional_state,
+            patient_id=patient_id,
+            recorded_at=recorded_at or datetime.now(),
+        )
+        db.add(record)
+        db.commit()
+        db.refresh(record)
+        return record
+    finally:
+        db.close()
+
+
+def update_emotional_record(record_id: str, **fields):
+    db = SessionLocal()
+    try:
+        statement = select(EmotionalRecord).where(EmotionalRecord.id == record_id)
+        record = db.execute(statement).scalar_one_or_none()
+
+        if record is None:
+            return None
+
+        for field, value in fields.items():
+            if hasattr(record, field):
+                setattr(record, field, value)
+
+        db.commit()
+        db.refresh(record)
+        return record
+    finally:
+        db.close()
+
+
+def delete_emotional_record(record_id: str):
+    db = SessionLocal()
+    try:
+        statement = select(EmotionalRecord).where(EmotionalRecord.id == record_id)
+        record = db.execute(statement).scalar_one_or_none()
+
+        if record is None:
+            return None
+
+        db.delete(record)
+        db.commit()
+        return record
+    finally:
+        db.close()
+
+        
+def create_food_record(
+    description: str,
+    patient_id: str,
+    recorded_at: datetime | None = None,
+):
+    db = SessionLocal()
+    try:
+        record = FoodRecord(
+            id=str(uuid.uuid4()),
+            description=description,
+            patient_id=patient_id,
+            recorded_at=recorded_at or datetime.now(),
+        )
+        db.add(record)
+        db.commit()
+        db.refresh(record)
+        return record
+    finally:
+        db.close()
+
+
+def update_food_record(record_id: str, **fields):
+    db = SessionLocal()
+    try:
+        statement = select(FoodRecord).where(FoodRecord.id == record_id)
+        record = db.execute(statement).scalar_one_or_none()
+
+        if record is None:
+            return None
+
+        for field, value in fields.items():
+            if hasattr(record, field):
+                setattr(record, field, value)
+
+        db.commit()
+        db.refresh(record)
+        return record
+    finally:
+        db.close()
+
+
+def delete_food_record(record_id: str):
+    db = SessionLocal()
+    try:
+        statement = select(FoodRecord).where(FoodRecord.id == record_id)
+        record = db.execute(statement).scalar_one_or_none()
+
+        if record is None:
+            return None
+
+        db.delete(record)
+        db.commit()
+        return record
+    finally:
+        db.close()
+
+        
+def get_health_center(
+    health_center_id: str,
+):
+    db = SessionLocal()
+    try:
+        statement = select(HealthCenter).where(
+            HealthCenter.id == health_center_id
+        )
+        return db.execute(
+            statement
+        ).scalar_one_or_none()
+
+    finally:
+        db.close()
+
+
+def create_health_center(
+    name: str,
+    city: str,
+):
+    db = SessionLocal()
+    try:
+        health_center = HealthCenter(
+            id=str(uuid.uuid4()),
+            name=name,
+            city=city,
+        )
+
+        db.add(health_center)
+        db.commit()
+        db.refresh(health_center)
+        return health_center
+
+    finally:
+        db.close()
+
+
+def update_health_center(
+    health_center_id: str,
+    **fields,
+):
+    db = SessionLocal()
+    try:
+        statement = select(HealthCenter).where(
+            HealthCenter.id == health_center_id
+        )
+
+        health_center = db.execute(
+            statement
+        ).scalar_one_or_none()
+
+        if health_center is None:
+            return None
+
+        for field, value in fields.items():
+            if hasattr(health_center, field):
+                setattr(
+                    health_center,
+                    field,
+                    value,
+                )
+
+        db.commit()
+        db.refresh(health_center)
+        return health_center
+
+    finally:
+        db.close()
+
+
+def delete_health_center(
+    health_center_id: str,
+):
+    db = SessionLocal()
+    try:
+        statement = select(HealthCenter).where(
+            HealthCenter.id == health_center_id
+        )
+
+        health_center = db.execute(
+            statement
+        ).scalar_one_or_none()
+
+        if health_center is None:
+            return None
+
+        db.delete(health_center)
+        db.commit()
+        return health_center
+
+    finally:
+        db.close()
+
+    
+
+def get_image(image_id: str):
+    db = SessionLocal()
+    try:
+        statement = select(Image).where(Image.id == image_id)
+        return db.execute(statement).scalar_one_or_none()
+    finally:
+        db.close()
+
+
+def create_image(
+    description: str,
+    image_type: str,
+    file_reference: str,
+    message_id: str,
+):
+    db = SessionLocal()
+    try:
+        image = Image(
+            id=str(uuid.uuid4()),
+            description=description,
+            image_type=image_type,
+            file_reference=file_reference,
+            message_id=message_id,
+        )
+        db.add(image)
+        db.commit()
+        db.refresh(image)
+        return image
+    finally:
+        db.close()
+
+
+def update_image(image_id: str, **fields):
+    db = SessionLocal()
+    try:
+        statement = select(Image).where(Image.id == image_id)
+        image = db.execute(statement).scalar_one_or_none()
+
+        if image is None:
+            return None
+
+        for field, value in fields.items():
+            if hasattr(image, field):
+                setattr(image, field, value)
+
+        db.commit()
+        db.refresh(image)
+        return image
+    finally:
+        db.close()
+
+
+def delete_image(image_id: str):
+    db = SessionLocal()
+    try:
+        statement = select(Image).where(Image.id == image_id)
+        image = db.execute(statement).scalar_one_or_none()
+
+        if image is None:
+            return None
+
+        db.delete(image)
+        db.commit()
+        return image
+    finally:
+        db.close()
+
+        
+def get_message(message_id: str):
+    db = SessionLocal()
+    try:
+        statement = select(Message).where(Message.id == message_id)
+        return db.execute(statement).scalar_one_or_none()
+    finally:
+        db.close()
+
+
+def create_message(
+    conversation_id: str,
+    sender_type: str,
+    sender_id: str,
+    content: str,
+    created_at: datetime | None = None,
+    patient_id: str | None = None,
+    professional_id: str | None = None,
+    sarah_version_id: str | None = None,
+):
+    db = SessionLocal()
+    try:
+        message = Message(
+            id=str(uuid.uuid4()),
+            conversation_id=conversation_id,
+            sender_type=sender_type,
+            sender_id=sender_id,
+            content=content,
+            created_at=created_at or datetime.now(),
+            patient_id=patient_id,
+            professional_id=professional_id,
+            sarah_version_id=sarah_version_id,
+        )
+        db.add(message)
+        db.commit()
+        db.refresh(message)
+        return message
+    finally:
+        db.close()
+
+
+
+def get_patient(
+    patient_id: str,
+):
+    db = SessionLocal()
+    try:
+
+        statement = select(Patient).where(
+            Patient.id == patient_id
+        )
+
+        return db.execute(
+            statement
+        ).scalar_one_or_none()
+
+    finally:
+        db.close()
+
+
+def create_patient(
+    first_name: str,
+    last_name: str,
+    rut: str,
+    birth_date: date,
+    sex: str,
+    email: str,
+    phone: str,
+    current_height: float,
+    current_weight: float,
+    lives_alone: bool,
+    bmi: float,
+    context: str,
+    psychological_profile: str,
+):
+    db = SessionLocal()
+
+    try:
+
+        patient = Patient(
+            id=str(uuid.uuid4()),
+            first_name=first_name,
+            last_name=last_name,
+            rut=rut,
+            birth_date=birth_date,
+            sex=sex,
+            email=email,
+            phone=phone,
+            current_height=current_height,
+            current_weight=current_weight,
+            lives_alone=lives_alone,
+            bmi=bmi,
+            context=context,
+            psychological_profile=psychological_profile,
+        )
+
+        db.add(patient)
+        db.commit()
+        db.refresh(patient)
+        return patient
+
+    finally:
+        db.close()
+
+
+def update_patient(
+    patient_id: str,
+    **fields,
+):
+    db = SessionLocal()
+    try:
+
+        statement = select(Patient).where(
+            Patient.id == patient_id
+        )
+
+        patient = db.execute(
+            statement
+        ).scalar_one_or_none()
+
+        if patient is None:
+            return None
+
+        for field, value in fields.items():
+            if hasattr(patient, field):
+                setattr(
+                    patient,
+                    field,
+                    value,
+                )
+
+        db.commit()
+        db.refresh(patient)
+        return patient
+
+    finally:
+        db.close()
+
+
+def delete_patient(
+    patient_id: str,
+):
+    db = SessionLocal()
+    try:
+        statement = select(Patient).where(
+            Patient.id == patient_id
+        )
+
+        patient = db.execute(
+            statement
+        ).scalar_one_or_none()
+
+        if patient is None:
+            return None
+
+        db.delete(patient)
+        db.commit()
+        return patient
+
+    finally:
+        db.close()
+
+
+def get_physical_activity_record(record_id: str):
+    db = SessionLocal()
+    try:
+        statement = select(PhysicalActivityRecord).where(PhysicalActivityRecord.id == record_id)
+        return db.execute(statement).scalar_one_or_none()
+    finally:
+        db.close()
+
+
+def create_physical_activity_record(
+    activity_type: str,
+    duration: float,
+    patient_id: str,
+    recorded_at: datetime | None = None,
+):
+    db = SessionLocal()
+    try:
+        record = PhysicalActivityRecord(
+            id=str(uuid.uuid4()),
+            activity_type=activity_type,
+            duration=duration,
+            patient_id=patient_id,
+            recorded_at=recorded_at or datetime.now(),
+        )
+        db.add(record)
+        db.commit()
+        db.refresh(record)
+        return record
+    finally:
+        db.close()
+
+
+def update_physical_activity_record(record_id: str, **fields):
+    db = SessionLocal()
+    try:
+        statement = select(PhysicalActivityRecord).where(PhysicalActivityRecord.id == record_id)
+        record = db.execute(statement).scalar_one_or_none()
+
+        if record is None:
+            return None
+
+        for field, value in fields.items():
+            if hasattr(record, field):
+                setattr(record, field, value)
+
+        db.commit()
+        db.refresh(record)
+        return record
+    finally:
+        db.close()
+
+
+def delete_physical_activity_record(record_id: str):
+    db = SessionLocal()
+    try:
+        statement = select(PhysicalActivityRecord).where(PhysicalActivityRecord.id == record_id)
+        record = db.execute(statement).scalar_one_or_none()
+
+        if record is None:
+            return None
+
+        db.delete(record)
+        db.commit()
+        return record
+    finally:
+        db.close()
+
+        
+
+def get_professional_patient(professional_id: str,patient_id: str,):
+    db = SessionLocal()
+    try:
+        statement = select(ProfessionalPatient).where(
+            ProfessionalPatient.professional_id == professional_id,
+            ProfessionalPatient.patient_id == patient_id,
+        )
+        return db.execute(
+            statement
+        ).scalar_one_or_none()
+
+    finally:
+        db.close()
+
+
+def create_professional_patient(professional_id: str, patient_id: str,):
+    db = SessionLocal()
+    try:
+        relation = ProfessionalPatient(
+            professional_id=professional_id,
+            patient_id=patient_id,
+        )
+
+        db.add(relation)
+        db.commit()
+        db.refresh(relation)
+        return relation
+
+    finally:
+        db.close()
+
+
+def update_professional_patient(professional_id: str, patient_id: str, **fields):
+    db = SessionLocal()
+    try:
+        statement = select(ProfessionalPatient).where(
+            ProfessionalPatient.professional_id == professional_id,
+            ProfessionalPatient.patient_id == patient_id,
+        )
+
+        relation = db.execute(
+            statement
+        ).scalar_one_or_none()
+
+        if relation is None:
+            return None
+
+        for field, value in fields.items():
+            if hasattr(relation, field):
+                setattr(
+                    relation,
+                    field,
+                    value,
+                )
+
+        db.commit()
+        db.refresh(relation)
+        return relation
+
+    finally:
+        db.close()
+
+
+def delete_professional_patient(professional_id: str, patient_id: str):
+    db = SessionLocal()
+    try:
+        statement = select(ProfessionalPatient).where(
+            ProfessionalPatient.professional_id == professional_id,
+            ProfessionalPatient.patient_id == patient_id,
+        )
+
+        relation = db.execute(
+            statement
+        ).scalar_one_or_none()
+
+        if relation is None:
+            return None
+
+        db.delete(relation)
+        db.commit()
+        return relation
+
+    finally:
+        db.close()
+
+        
+
+def get_professional(
+    professional_id: str,
+):
+    db = SessionLocal()
+    try:
+        statement = select(Professional).where(
+            Professional.id == professional_id
+        )
+        return db.execute(
+            statement
+        ).scalar_one_or_none()
+
+    finally:
+        db.close()
+
+
+def create_professional(
+    first_name: str,
+    last_name: str,
+    specialty: str,
+    email: str,
+    phone: str,
+    health_center_id: str,
+):
+    db = SessionLocal()
+    try:
+        health_center = db.execute(
+            select(HealthCenter).where(
+                HealthCenter.id == health_center_id
+            )
+        ).scalar_one_or_none()
+
+        if health_center is None:
+            return None
+
+        professional = Professional(
+            id=str(uuid.uuid4()),
+            first_name=first_name,
+            last_name=last_name,
+            specialty=specialty,
+            email=email,
+            phone=phone,
+            health_center_id=health_center_id,
+        )
+
+        db.add(professional)
+        db.commit()
+        db.refresh(professional)
+        return professional
+
+    finally:
+        db.close()
+
+
+def update_professional(
+    professional_id: str,
+    **fields,
+):
+    db = SessionLocal()
+    try:
+        statement = select(Professional).where(
+            Professional.id == professional_id
+        )
+
+        professional = db.execute(
+            statement
+        ).scalar_one_or_none()
+
+        if professional is None:
+            return None
+        
+        if "health_center_id" in fields:
+            health_center = db.execute(
+                select(HealthCenter).where(
+                    HealthCenter.id == fields["health_center_id"]
+                )
+            ).scalar_one_or_none()
+
+            if health_center is None:
+                return None
+
+        for field, value in fields.items():
+            if hasattr(professional, field):
+                setattr(
+                    professional,
+                    field,
+                    value,
+                )
+
+        db.commit()
+        db.refresh(professional)
+        return professional
+
+    finally:
+        db.close()
+
+
+def delete_professional(
+    professional_id: str,
+):
+    db = SessionLocal()
+    try:
+        statement = select(Professional).where(
+            Professional.id == professional_id
+        )
+
+        professional = db.execute(
+            statement
+        ).scalar_one_or_none()
+
+        if professional is None:
+            return None
+
+        db.delete(professional)
+        db.commit()
+        return professional
+
+    finally:
+        db.close()
+
+        
+
+def get_sarah_version(version_id: str):
+    db = SessionLocal()
+    try:
+        statement = select(SarahVersion).where(SarahVersion.id == version_id)
+        return db.execute(statement).scalar_one_or_none()
+    finally:
+        db.close()
+
+
+def create_sarah_version(nombre: str, description: str):
+    db = SessionLocal()
+    try:
+        sarah_version = SarahVersion(
+            id=str(uuid.uuid4()),
+            nombre=nombre,
+            description=description,
+        )
+        db.add(sarah_version)
+        db.commit()
+        db.refresh(sarah_version)
+        return sarah_version
+    finally:
+        db.close()
+
+
+def update_sarah_version(version_id: str, **fields):
+    db = SessionLocal()
+    try:
+        statement = select(SarahVersion).where(SarahVersion.id == version_id)
+        sarah_version = db.execute(statement).scalar_one_or_none()
+
+        if sarah_version is None:
+            return None
+
+        for field, value in fields.items():
+            if hasattr(sarah_version, field):
+                setattr(sarah_version, field, value)
+
+        db.commit()
+        db.refresh(sarah_version)
+        return sarah_version
+    finally:
+        db.close()
+
+
+def delete_sarah_version(version_id: str):
+    db = SessionLocal()
+    try:
+        statement = select(SarahVersion).where(SarahVersion.id == version_id)
+        sarah_version = db.execute(statement).scalar_one_or_none()
+
+        if sarah_version is None:
+            return None
+
+        db.delete(sarah_version)
+        db.commit()
+        return sarah_version
+    finally:
+        db.close()
+
+        
+
+def get_weight_record(record_id: str):
+    db = SessionLocal()
+    try:
+        statement = select(WeightRecord).where(WeightRecord.id == record_id)
+        return db.execute(statement).scalar_one_or_none()
+    finally:
+        db.close()
+
+
+def create_weight_record(
+    weight: float,
+    patient_id: str,
+    recorded_at: datetime | None = None,
+):
+    db = SessionLocal()
+    try:
+        record = WeightRecord(
+            id=str(uuid.uuid4()),
+            weight=weight,
+            patient_id=patient_id,
+            recorded_at=recorded_at or datetime.now(),
+        )
+        db.add(record)
+        db.commit()
+        db.refresh(record)
+        return record
+    finally:
+        db.close()
+
+
+def update_weight_record(record_id: str, **fields):
+    db = SessionLocal()
+    try:
+        statement = select(WeightRecord).where(WeightRecord.id == record_id)
+        record = db.execute(statement).scalar_one_or_none()
+
+        if record is None:
+            return None
+
+        for field, value in fields.items():
+            if hasattr(record, field):
+                setattr(record, field, value)
+
+        db.commit()
+        db.refresh(record)
+        return record
+    finally:
+        db.close()
+
+
+def delete_weight_record(record_id: str):
+    db = SessionLocal()
+    try:
+        statement = select(WeightRecord).where(WeightRecord.id == record_id)
+        record = db.execute(statement).scalar_one_or_none()
+
+        if record is None:
+            return None
+
+        db.delete(record)
+        db.commit()
+        return record
+    finally:
+        db.close()
+
+        
+    

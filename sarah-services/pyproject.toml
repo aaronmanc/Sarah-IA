@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sarah-services"
+version = "0.1.0"
+description = "API REST Layer for Sarah"
+requires-python = ">=3.12"
+
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic",
+    "psycopg"
+
+]
+
+[tool.setuptools]
+packages = [
+    "api",
+    "schemas"
+]

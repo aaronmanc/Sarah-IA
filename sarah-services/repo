@@ -1,0 +1,644 @@
+router = APIRouter(prefix="/conversations", tags=["conversations"])
+
+
+@router.get("/{conversation_id}", response_model=Conversation)
+def get_conversation_endpoint(conversation_id: str):
+    conv = get_conversation(conversation_id)
+    if conv is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Conversation not found",
+        )
+    return conv
+
+
+@router.post("", response_model=Conversation, status_code=status.HTTP_201_CREATED)
+def create_conversation_endpoint(conversation: CreateConversation):
+    return create_conversation(created_at=conversation.created_at)
+
+
+@router.delete("/{conversation_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_conversation_endpoint(conversation_id: str):
+    deleted = delete_conversation(conversation_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Conversation not found",
+        )
+    return None
+
+
+
+router = APIRouter(prefix="/emotional-records", tags=["emotional_records"])
+
+
+@router.get("/{record_id}", response_model=EmotionalRecord)
+def get_emotional_record_endpoint(record_id: str):
+    record = get_emotional_record(record_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Emotional record not found",
+        )
+    return record
+
+
+@router.post("", response_model=EmotionalRecord, status_code=status.HTTP_201_CREATED)
+def create_emotional_record_endpoint(record: CreateEmotionalRecord):
+    try:
+        created = create_emotional_record(
+            emotional_state=record.emotional_state,
+            patient_id=record.patient_id,
+            recorded_at=record.recorded_at,
+        )
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid patient ID reference",
+        )
+    return created
+
+
+@router.put("/{record_id}", response_model=EmotionalRecord)
+def update_emotional_record_endpoint(
+    record_id: str, record: UpdateEmotionalRecord
+):
+    updated = update_emotional_record(
+        record_id=record_id,
+        emotional_state=record.emotional_state,
+        recorded_at=record.recorded_at,
+    )
+    if updated is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Emotional record not found",
+        )
+    return updated
+
+
+@router.delete("/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_emotional_record_endpoint(record_id: str):
+    deleted = delete_emotional_record(record_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Emotional record not found",
+        )
+    return None
+
+
+router = APIRouter(prefix="/food-records", tags=["food_records"])
+
+
+@router.get("/{record_id}", response_model=FoodRecord)
+def get_food_record_endpoint(record_id: str):
+    record = get_food_record(record_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Food record not found",
+        )
+    return record
+
+
+@router.post("", response_model=FoodRecord, status_code=status.HTTP_201_CREATED)
+def create_food_record_endpoint(record: CreateFoodRecord):
+    try:
+        created = create_food_record(
+            description=record.description,
+            patient_id=record.patient_id,
+            recorded_at=record.recorded_at,
+        )
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid patient ID reference",
+        )
+    return created
+
+
+@router.put("/{record_id}", response_model=FoodRecord)
+def update_food_record_endpoint(record_id: str, record: UpdateFoodRecord):
+    updated = update_food_record(
+        record_id=record_id,
+        description=record.description,
+        recorded_at=record.recorded_at,
+    )
+    if updated is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Food record not found",
+        )
+    return updated
+
+
+@router.delete("/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_food_record_endpoint(record_id: str):
+    deleted = delete_food_record(record_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Food record not found",
+        )
+    return None
+
+
+router = APIRouter(prefix="/health-centers", tags=["health_centers"])
+
+@router.get("/{health_center_id}", response_model=HealthCenter)
+def get_health_center_endpoint(health_center_id: str):
+    hc = get_health_center(health_center_id)
+    if hc is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Health center not found")
+    return hc
+
+@router.post("", response_model=HealthCenter, status_code=status.HTTP_201_CREATED)
+def create_health_center_endpoint(health_center: CreateHealthCenter):
+    try:
+        created = create_health_center(name=health_center.name, city=health_center.city)
+    except IntegrityError:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Health center already exists")
+    return created
+
+@router.put("/{health_center_id}", response_model=HealthCenter)
+def update_health_center_endpoint(health_center_id: str, health_center: UpdateHealthCenter):
+    updated = update_health_center(health_center_id, name=health_center.name, city=health_center.city)
+    if updated is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Health center not found")
+    return updated
+
+@router.delete("/{health_center_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_health_center_endpoint(health_center_id: str):
+    deleted = delete_health_center(health_center_id)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Health center not found")
+    return None
+
+@router.get("/{image_id}", response_model=Image)
+def get_image_endpoint(image_id: str):
+    img = get_image(image_id)
+    if img is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Image not found"
+        )
+    return img
+
+
+@router.post("", response_model=Image, status_code=status.HTTP_201_CREATED)
+def create_image_endpoint(image: CreateImage):
+    return create_image(
+        file_reference=image.file_reference,
+        image_type=image.image_type,
+        description=image.description,
+    )
+
+
+
+@router.delete("/{image_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_image_endpoint(image_id: str):
+    deleted = delete_image(image_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Image not found"
+        )
+    return None
+
+
+
+router = APIRouter(prefix="/messages", tags=["messages"])
+
+
+@router.get("/{message_id}", response_model=Message)
+def get_message_endpoint(message_id: str):
+    msg = get_message(message_id)
+    if msg is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Message not found"
+        )
+    return msg
+
+
+@router.post("", response_model=Message, status_code=status.HTTP_201_CREATED)
+def create_message_endpoint(message: CreateMessage):
+    try:
+        created = create_message(
+            conversation_id=message.conversation_id,
+            sender_type=message.sender_type,
+            sender_id=message.sender_id,
+            content=message.content,
+            created_at=message.created_at,
+            image_id=message.image_id,
+            patient_id=message.patient_id,
+            professional_id=message.professional_id,
+            sarah_version_id=message.sarah_version_id,
+        )
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid foreign key reference in message data",
+        )
+    return created
+
+
+@router.put("/{message_id}", response_model=Message)
+def update_message_endpoint(message_id: str, message: UpdateMessage):
+    updated = update_message(
+        message_id=message_id,
+        content=message.content,
+        sender_type=message.sender_type,
+        sender_id=message.sender_id,
+        image_id=message.image_id,
+    )
+    if updated is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Message not found"
+        )
+    return updated
+
+
+@router.delete("/{message_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_message_endpoint(message_id: str):
+    deleted = delete_message(message_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Message not found"
+        )
+    return None
+
+
+router = APIRouter(prefix = "/patients", tags = ["patients"])
+
+# ==============================================================
+# Get Patient
+# ==============================================================
+
+@router.get("/{patient_id}", response_model = Patient)
+def get_patient_endpoint(patient_id: str):
+    patient = get_patient(patient_id)
+
+    if patient is None:
+        raise HTTPException(
+            status_code = status.HTTP_404_NOT_FOUND,
+            detail = "Patient not found"
+        )
+    return patient
+
+
+# ==============================================================
+# Create Patient
+# ==============================================================
+
+@router.post("", response_model=Patient, status_code=status.HTTP_201_CREATED,)
+def create_patient_endpoint(patient: CreatePatient,):
+    try:
+        created_patient = create_patient(
+            first_name=patient.first_name,
+            last_name=patient.last_name,
+            rut=patient.rut,
+            birth_date=patient.birth_date,
+            sex=patient.sex,
+            email=patient.email,
+            phone=patient.phone,
+            current_height=patient.current_height,
+            current_weight=patient.current_weight,
+            lives_alone=patient.lives_alone,
+            bmi=patient.bmi,
+            context=patient.context,
+            psychological_profile=patient.psychological_profile,
+        )
+
+    except IntegrityError as e:
+        if "rut" in str(e.orig).lower():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="A patient with this RUT already exists",
+            )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not create patient",
+        )
+
+    return Patient(
+        id=created_patient.id,
+        first_name=created_patient.first_name,
+        last_name=created_patient.last_name,
+        rut=created_patient.rut,
+        birth_date=created_patient.birth_date,
+        sex=created_patient.sex,
+        email=created_patient.email,
+        phone=created_patient.phone,
+        current_height=created_patient.current_height,
+        current_weight=created_patient.current_weight,
+        lives_alone=created_patient.lives_alone,
+        bmi=created_patient.bmi,
+        context=created_patient.context,
+        psychological_profile=created_patient.psychological_profile,
+    )
+
+
+# ============================================================
+# Update patient
+# ============================================================
+
+@router.put("/{patient_id}", response_model=Patient,)
+def update_patient_endpoint(patient_id: str, patient: UpdatePatient):
+    try:
+        updated_patient = update_patient(
+            patient_id=patient_id,
+            first_name=patient.first_name,
+            last_name=patient.last_name,
+            rut=patient.rut,
+            birth_date=patient.birth_date,
+            sex=patient.sex,
+            email=patient.email,
+            phone=patient.phone,
+            current_height=patient.current_height,
+            current_weight=patient.current_weight,
+            lives_alone=patient.lives_alone,
+            bmi=patient.bmi,
+            context=patient.context,
+            psychological_profile=patient.psychological_profile,
+        )
+
+    except IntegrityError as e:
+        if "rut" in str(e.orig).lower():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="A patient with this RUT already exists",
+            )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not update patient",
+        )
+
+    if updated_patient is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Patient not found",
+        )
+
+    return Patient(
+        id=updated_patient.id,
+        first_name=updated_patient.first_name,
+        last_name=updated_patient.last_name,
+        rut=updated_patient.rut,
+        birth_date=updated_patient.birth_date,
+        sex=updated_patient.sex,
+        email=updated_patient.email,
+        phone=updated_patient.phone,
+        current_height=updated_patient.current_height,
+        current_weight=updated_patient.current_weight,
+        lives_alone=updated_patient.lives_alone,
+        bmi=updated_patient.bmi,
+        context=updated_patient.context,
+        psychological_profile=updated_patient.psychological_profile,
+    )
+
+
+# ============================================================
+# Delete patient
+# ============================================================
+
+@router.delete("/{patient_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_patient_endpoint(patient_id: str):
+    deleted = delete_patient(patient_id)
+
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Patient not found",
+        )
+
+    return None
+
+
+
+router = APIRouter(prefix="/physical-records", tags=["physical_records"])
+
+@router.get("/{record_id}", response_model=PhysicalActivityRecord)
+def get_physical_record_endpoint(record_id: str):
+    record = get_physical_activity_record(record_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Physical activity record not found",
+        )
+    return record
+
+
+@router.post("", response_model=PhysicalActivityRecord, status_code=status.HTTP_201_CREATED)
+def create_physical_record_endpoint(record: CreatePhysicalActivityRecord):
+    try:
+        created = create_physical_activity_record(
+            activity_type=record.activity_type,
+            duration=record.duration,
+            patient_id=record.patient_id,
+            recorded_at=record.recorded_at,
+        )
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid patient ID reference",
+        )
+    return created
+
+
+@router.put("/{record_id}", response_model=PhysicalActivityRecord)
+def update_physical_record_endpoint(record_id: str, record: UpdatePhysicalActivityRecord):
+    updated = update_physical_activity_record(
+        record_id=record_id,
+        activity_type=record.activity_type,
+        duration=record.duration,
+        recorded_at=record.recorded_at,
+    )
+    if updated is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Physical activity record not found",
+        )
+    return updated
+
+
+@router.delete("/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_physical_record_endpoint(record_id: str):
+    deleted = delete_physical_activity_record(record_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Physical activity record not found",
+        )
+    return None
+
+
+router = APIRouter(prefix="/professional-patients", tags=["professional_patients"])
+
+
+@router.get("", response_model=ProfessionalPatient)
+def get_professional_patient_endpoint(professional_id: str, patient_id: str):
+    rel = get_professional_patient(professional_id, patient_id)
+    if rel is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Association not found",
+        )
+    return rel
+
+
+@router.post("", response_model=ProfessionalPatient, status_code=status.HTTP_201_CREATED)
+def create_professional_patient_endpoint(data: CreateProfessionalPatient):
+    try:
+        created = create_professional_patient(
+            professional_id=data.professional_id,
+            patient_id=data.patient_id,
+        )
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid professional or patient ID reference",
+        )
+    return created
+
+
+@router.delete("", status_code=status.HTTP_204_NO_CONTENT)
+def delete_professional_patient_endpoint(professional_id: str, patient_id: str):
+    deleted = delete_professional_patient(professional_id, patient_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Association not found",
+        )
+    return None
+
+
+router = APIRouter(prefix="/professionals", tags=["professionals"])
+
+@router.get("/{professional_id}", response_model=Professional)
+def get_professional_endpoint(professional_id: str):
+    prof = get_professional(professional_id)
+    if prof is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Professional not found")
+    return prof
+
+@router.post("", response_model=Professional, status_code=status.HTTP_201_CREATED)
+def create_professional_endpoint(professional: CreateProfessional):
+    try:
+        created = create_professional(
+            first_name=professional.first_name,
+            last_name=professional.last_name,
+            specialty=professional.specialty,
+            email=professional.email,
+            phone=professional.phone,
+            health_center_id=professional.health_center_id,
+        )
+    except IntegrityError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid health center reference or duplicate email")
+    return created
+
+@router.put("/{professional_id}", response_model=Professional)
+def update_professional_endpoint(professional_id: str, professional: UpdateProfessional):
+    updated = update_professional(
+        professional_id=professional_id,
+        first_name=professional.first_name,
+        last_name=professional.last_name,
+        specialty=professional.specialty,
+        email=professional.email,
+        phone=professional.phone,
+        health_center_id=professional.health_center_id,
+    )
+    if updated is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Professional not found")
+    return updated
+
+@router.delete("/{professional_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_professional_endpoint(professional_id: str):
+    deleted = delete_professional(professional_id)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Professional not found")
+    return None
+
+
+router = APIRouter(prefix="/sarah-versions", tags=["sarah_versions"])
+
+@router.get("/{version_id}", response_model=SarahVersion)
+def get_sarah_version_endpoint(version_id: str):
+    ver = get_sarah_version(version_id)
+    if ver is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sarah version not found")
+    return ver
+
+@router.post("", response_model=SarahVersion, status_code=status.HTTP_201_CREATED)
+def create_sarah_version_endpoint(version: CreateSarahVersion):
+    return create_sarah_version(nombre=version.nombre, description=version.description)
+
+@router.put("/{version_id}", response_model=SarahVersion)
+def update_sarah_version_endpoint(version_id: str, version: UpdateSarahVersion):
+    updated = update_sarah_version(version_id, nombre=version.nombre, description=version.description)
+    if updated is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sarah version not found")
+    return updated
+
+@router.delete("/{version_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_sarah_version_endpoint(version_id: str):
+    deleted = delete_sarah_version(version_id)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sarah version not found")
+    return None
+
+
+router = APIRouter(prefix="/weight-records", tags=["weight_records"])
+
+
+@router.get("/{record_id}", response_model=WeightRecord)
+def get_weight_record_endpoint(record_id: str):
+    record = get_weight_record(record_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Weight record not found",
+        )
+    return record
+
+
+@router.post("", response_model=WeightRecord, status_code=status.HTTP_201_CREATED)
+def create_weight_record_endpoint(record: CreateWeightRecord):
+    try:
+        created = create_weight_record(
+            weight=record.weight,
+            patient_id=record.patient_id,
+            recorded_at=record.recorded_at,
+        )
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid patient ID reference",
+        )
+    return created
+
+
+@router.put("/{record_id}", response_model=WeightRecord)
+def update_weight_record_endpoint(record_id: str, record: UpdateWeightRecord):
+    updated = update_weight_record(
+        record_id=record_id,
+        weight=record.weight,
+        recorded_at=record.recorded_at,
+    )
+    if updated is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Weight record not found",
+        )
+    return updated
+
+
+@router.delete("/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_weight_record_endpoint(record_id: str):
+    deleted = delete_weight_record(record_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Weight record not found",
+        )
+    return None
+
